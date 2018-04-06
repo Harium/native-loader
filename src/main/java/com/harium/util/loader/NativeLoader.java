@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 
 public class NativeLoader {
 
+    public static final String JAVA_LIBRARY_PATH = "java.library.path";
     public static boolean DEBUG = false;
     private static final String STANDARD_DIR = "/libs/natives";
 
@@ -46,7 +47,8 @@ public class NativeLoader {
 
         log("Loading libraries from: " + nativesPath);
 
-        System.setProperty("java.library.path", nativesPath);
+        String currentPath = System.getProperty(JAVA_LIBRARY_PATH);
+        System.setProperty(JAVA_LIBRARY_PATH, nativesPath);
 
         //set sys_paths to null
         try {
@@ -72,6 +74,7 @@ public class NativeLoader {
         }
 
         System.loadLibrary(libname);
+        System.setProperty(JAVA_LIBRARY_PATH, currentPath);
 
         return true;
     }

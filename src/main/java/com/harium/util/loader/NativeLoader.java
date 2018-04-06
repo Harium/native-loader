@@ -4,31 +4,49 @@ import cz.adamh.utils.NativeUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 
 public class NativeLoader {
 
-    public static final String JAVA_LIBRARY_PATH = "java.library.path";
     public static boolean DEBUG = false;
     private static final String STANDARD_DIR = "/libs/natives";
 
+    public static boolean load(String path, String libname) {
+        return loadLibrary(path, libname);
+    }
+
     public static boolean load(String libname) {
         String folder = buildFolder();
-        // If can't find the library inside the jar
-        if (!loadLibraryFromJar(folder, libname)) {
-            // Tries to find the library inside a folder
-            String path = System.getProperty("user.dir");
-            return loadLibraryFromFolder(path, libname);
-        }
+        return loadLibrary(folder, libname);
+    }
 
+    private static boolean loadLibrary(String folder, String libname) {
+        String libraryFile = System.mapLibraryName(libname);
+
+        // If can't find the library inside the jar
+        if (!loadLibraryFromJar(folder, libraryFile)) {
+            // Tries to find the library inside a folder
+            String localPath = System.getProperty("user.dir") + File.separator + folder;
+            return loadLibraryFromFolder(localPath, libraryFile);
+        }
         return true;
     }
 
     public static boolean loadLibraryFromJar(String path, String libname) {
-        String libraryFile = System.mapLibraryName(libname);
+        StringBuilder builder = new StringBuilder();
+
+        if (!path.startsWith(File.separator)) {
+            builder.append(File.separator);
+        }
+        builder.append(path);
+        if (!path.endsWith(File.separator)) {
+            builder.append(File.separator);
+        }
+        builder.append(libname);
+
+        String relativePath = builder.toString();
 
         try {
-            NativeUtils.loadLibraryFromJar(path + File.separator + libraryFile);
+            NativeUtils.loadLibraryFromJar(relativePath);
         } catch (IOException e) {
             return false;
         }
@@ -37,44 +55,14 @@ public class NativeLoader {
     }
 
     public static boolean loadLibraryFromFolder(String path, String libname) {
-        File nativesFolder = new File(path + STANDARD_DIR);
+        File nativesFolder = new File(path);
 
         if (!nativesFolder.exists()) {
             return false;
         }
 
-        String nativesPath = buildFolder(path);
-
-        log("Loading libraries from: " + nativesPath);
-
-        String currentPath = System.getProperty(JAVA_LIBRARY_PATH);
-        System.setProperty(JAVA_LIBRARY_PATH, nativesPath);
-
-        //set sys_paths to null
-        try {
-            Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
-            sysPathsField.setAccessible(true);
-            sysPathsField.set(null, null);
-        } catch (NoSuchFieldException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        }
-
-        System.loadLibrary(libname);
-        System.setProperty(JAVA_LIBRARY_PATH, currentPath);
+        log("Loading libraries from: " + path);
+        System.load(path + File.separator + libname);
 
         return true;
     }
@@ -87,18 +75,27 @@ public class NativeLoader {
     }
 
     public static String buildFolder() {
-        return buildFolder("");
+        return buildFolder(STANDARD_DIR);
     }
 
     private static String buildFolder(String path) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(path);
+
         String osFolder = OSDiscover.getOS().getFolder();
         String archFolder = OSDiscover.getArchitecture().getFolder();
 
         if (osFolder.isEmpty()) {
-            return path + STANDARD_DIR;
+            return builder.toString();
         }
 
-        return path + STANDARD_DIR + File.separator + osFolder + File.separator + archFolder + File.separator;
+        builder.append(File.separator);
+        builder.append(osFolder);
+        builder.append(File.separator);
+        builder.append(archFolder);
+        builder.append(File.separator);
+
+        return builder.toString();
     }
 
 }

@@ -10,6 +10,9 @@ public class NativeLoaderTest {
     public void testFindLibraryFolder() {
         boolean found = NativeLoader.load(LIB_HELLO);
         Assert.assertTrue(found);
+
+        found = NativeLoader.load("libs/natives/unix/x86_64", LIB_HELLO);
+        Assert.assertTrue(found);
     }
 
     @Test

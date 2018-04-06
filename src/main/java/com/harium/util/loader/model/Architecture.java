@@ -1,7 +1,7 @@
 package com.harium.util.loader.model;
 
 public enum Architecture {
-    X32("i586"), X64("x86_64"), UNKNOWN("");
+    X32("i686"), X64("x86_64"), UNKNOWN("");
 
     private final String folder;
 

@@ -34,13 +34,18 @@ public class NativeLoader {
     public static boolean loadLibraryFromJar(String path, String libname) {
         StringBuilder builder = new StringBuilder();
 
-        if (!path.startsWith(File.separator)) {
+        if (!path.isEmpty()) {
+            if (!path.startsWith(File.separator)) {
+                builder.append(File.separator);
+            }
+            builder.append(path);
+            if (!path.endsWith(File.separator)) {
+                builder.append(File.separator);
+            }
+        } else {
             builder.append(File.separator);
         }
-        builder.append(path);
-        if (!path.endsWith(File.separator)) {
-            builder.append(File.separator);
-        }
+
         builder.append(libname);
 
         String relativePath = builder.toString();

@@ -1,5 +1,6 @@
 package com.harium.util.loader;
 
+import com.harium.util.OSDetector;
 import cz.adamh.utils.NativeUtils;
 
 import java.io.File;
@@ -87,8 +88,8 @@ public class NativeLoader {
         StringBuilder builder = new StringBuilder();
         builder.append(path);
 
-        String osFolder = OSDiscover.getOS().getFolder();
-        String archFolder = OSDiscover.getArchitecture().getFolder();
+        String osFolder = OSDetector.getOS().getName();
+        String archFolder = OSDetector.getArchitecture().getFolder();
 
         if (osFolder.isEmpty()) {
             return builder.toString();
